@@ -57,7 +57,7 @@ export const LoginPage = () => {
 
       auth?.login(token)
 
-      navigate('/')
+      navigate('/', { replace: true })
     } catch (error) {
       console.error(error)
 

@@ -1,7 +1,7 @@
 import { type ReactNode, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 
-import { Loader } from '@mantine/core'
+import { Center, Loader } from '@mantine/core'
 
 import { useAuth } from './contexts/auth-context'
 
@@ -10,15 +10,15 @@ import { UploadForm } from './components/upload-form'
 import { LoginPage } from './pages/login-page'
 
 const AuthenticatedRoute = ({ children }: { children: ReactNode }) => {
-  const { token } = useAuth() || {}
+  const auth = useAuth()
 
-  return token ? <>{children}</> : <Navigate to="/login" replace />
+  return auth?.token ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
-  const { token } = useAuth() || {}
+  const auth = useAuth()
 
-  return token ? <Navigate to="/" replace /> : <>{children}</>
+  return auth?.token ? <Navigate to="/" replace /> : <>{children}</>
 }
 
 export const App = () => {
@@ -28,7 +28,13 @@ export const App = () => {
   }
 
   return (
-    <Suspense fallback={<Loader size={50} />}>
+    <Suspense
+      fallback={
+        <Center>
+          <Loader size={150} />
+        </Center>
+      }
+    >
       <BrowserRouter>
         <Routes>
           {renderRoute('/login', <LoginPage />, true)}
