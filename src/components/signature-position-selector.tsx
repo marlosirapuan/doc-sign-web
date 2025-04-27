@@ -18,7 +18,7 @@ export const SignaturePositionSelector = ({
   ]
 
   return (
-    <Group>
+    <Group gap={5}>
       {positions.map((pos) => (
         <Radio
           size="xs"

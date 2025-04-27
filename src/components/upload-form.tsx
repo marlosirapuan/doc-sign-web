@@ -89,46 +89,35 @@ export const UploadForm = () => {
 
   const handleUpload = async () => {
     if (!pdfFile) {
-      showNotification({
+      return showNotification({
         title: 'Attention',
         message: 'Please select a PDF or DOCX file!',
         color: 'red'
       })
-      return
     }
 
-    if (signatureType === 'draw' && !signatureDataUrl) {
-      showNotification({
+    if ((signatureType === 'draw' && !signatureDataUrl) || (signatureType === 'upload' && !uploadedFile)) {
+      return showNotification({
         title: 'Attention',
-        message: 'Please draw your signature first!',
+        message: `Please ${signatureType === 'draw' ? 'draw your signature' : 'upload your signature'} first!`,
         color: 'red'
       })
-      return
-    }
-
-    if (signatureType === 'upload' && !uploadedFile) {
-      showNotification({
-        title: 'Attention',
-        message: 'Please upload your signature first!',
-        color: 'red'
-      })
-      return
     }
 
     setUploading(true)
 
-    const signatureBlob =
-      signatureType === 'draw'
-        ? await (await fetch(signatureDataUrl!)).blob()
-        : new Blob([uploadedFile as File], { type: uploadedFile?.type })
-
-    const formData = new FormData()
-    formData.append('file', pdfFile)
-    formData.append('signature', signatureBlob, 'my-signature.png')
-    formData.append('signature_x', signatureCoords.x.toString())
-    formData.append('signature_y', signatureCoords.y.toString())
-
     try {
+      const signatureBlob =
+        signatureType === 'draw'
+          ? await (await fetch(signatureDataUrl!)).blob()
+          : new Blob([uploadedFile as File], { type: uploadedFile?.type })
+
+      const formData = new FormData()
+      formData.append('file', pdfFile)
+      formData.append('signature', signatureBlob, 'my-signature.png')
+      formData.append('signature_x', signatureCoords.x.toString())
+      formData.append('signature_y', signatureCoords.y.toString())
+
       await api.post('documents', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -237,7 +226,7 @@ export const UploadForm = () => {
 
         <Divider />
 
-        <Fieldset legend="Upload your document (.PDF or .DOCX) and sign it below">
+        <Fieldset legend="1) Upload your document (.PDF or .DOCX) and sign it below">
           <input
             type="file"
             accept="application/pdf,application/msword,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -246,27 +235,25 @@ export const UploadForm = () => {
           />
         </Fieldset>
 
-        <SignatureType onSelectType={(value) => setSignatureType(value)} />
+        <Fieldset legend="2) Select your signature type">
+          <SignatureType onSelectType={(value) => setSignatureType(value)} />
+        </Fieldset>
 
         {signatureType === 'draw' && (
-          <Fieldset legend="Draw your signature">
+          <Fieldset legend="3) Draw your signature">
             <SignaturePad onSave={setSignatureDataUrl} />
           </Fieldset>
         )}
 
         {signatureType === 'upload' && (
-          <Fieldset legend="Upload your signature (PNG)">
-            <Stack>
-              <input type="file" accept="image/png" onChange={handleFileChange} />
-              {uploadedFile && <Text c="dimmed">{uploadedFile.name}</Text>}
-            </Stack>
+          <Fieldset legend="3) Upload your signature (PNG)">
+            <input type="file" accept="image/png" onChange={handleFileChange} />
           </Fieldset>
         )}
 
-        <Text c="dimmed" size="sm">
-          Select the position of your signature on the document
-        </Text>
-        <SignaturePositionSelector onSelectPosition={(coords) => setSignatureCoords(coords)} />
+        <Fieldset legend="4) Select signature position">
+          <SignaturePositionSelector onSelectPosition={(coords) => setSignatureCoords(coords)} />
+        </Fieldset>
 
         {signatureDataUrl && <Alert color="green">Signature saved! You can now upload the document.</Alert>}
         {!signatureDataUrl && (

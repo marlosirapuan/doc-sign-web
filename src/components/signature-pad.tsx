@@ -50,7 +50,7 @@ export const SignaturePad = ({ onSave }: Props) => {
     <Box>
       <SignatureCanvas
         // penColor="black"
-        canvasProps={{ width: 500, height: 100 }}
+        canvasProps={{ width: 600, height: 100 }}
         ref={sigCanvas}
       />
       <Group>
