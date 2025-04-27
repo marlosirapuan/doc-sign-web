@@ -1,22 +1,22 @@
-import { type ReactNode, Suspense, use } from 'react'
-
+import { type ReactNode, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 
-import { AuthContext } from './contexts/auth-context'
+import { Loader } from '@mantine/core'
+
+import { useAuth } from './contexts/auth-context'
 
 import { UploadForm } from './components/upload-form'
 
-import { Loader } from '@mantine/core'
 import { LoginPage } from './pages/login-page'
 
 const AuthenticatedRoute = ({ children }: { children: ReactNode }) => {
-  const { token } = use(AuthContext) || {}
+  const { token } = useAuth() || {}
 
   return token ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
-  const { token } = use(AuthContext) || {}
+  const { token } = useAuth() || {}
 
   return token ? <Navigate to="/" replace /> : <>{children}</>
 }

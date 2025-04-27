@@ -1,4 +1,4 @@
-import { type ReactNode, createContext, useEffect, useState } from 'react'
+import { type ReactNode, createContext, use, useEffect, useState } from 'react'
 
 interface AuthContextType {
   token: string | null
@@ -6,7 +6,7 @@ interface AuthContextType {
   logout: () => void
 }
 
-export const AuthContext = createContext<AuthContextType | null>(null)
+const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null)
@@ -33,3 +33,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return <AuthContext.Provider value={{ token, login, logout }}>{children}</AuthContext.Provider>
 }
+
+export const useAuth = () => use(AuthContext)
