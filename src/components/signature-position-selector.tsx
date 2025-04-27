@@ -11,10 +11,10 @@ export const SignaturePositionSelector = ({
   const positions = [
     { label: 'Top Left', x: 30, y: 750 },
     { label: 'Top Center', x: 150, y: 750 },
-    { label: 'Top Right', x: 300, y: 750 },
+    { label: 'Top Right', x: 350, y: 750 },
     { label: 'Bottom Left', x: 50, y: 100 },
     { label: 'Bottom Center', x: 150, y: 100 },
-    { label: 'Bottom Right', x: 300, y: 100 }
+    { label: 'Bottom Right', x: 350, y: 100 }
   ]
 
   return (
