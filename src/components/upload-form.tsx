@@ -1,16 +1,31 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { ActionIcon, Badge, Button, Container, Divider, Fieldset, Group, Stack, Text, Title } from '@mantine/core'
+import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Button,
+  Container,
+  Divider,
+  Fieldset,
+  Group,
+  Stack,
+  Table,
+  Text,
+  Title
+} from '@mantine/core'
+import { showNotification } from '@mantine/notifications'
 
-import { IconLogout, IconPdf, IconSend, IconTrash } from '@tabler/icons-react'
+import { IconLogout, IconSend, IconTrash } from '@tabler/icons-react'
 
 import { api } from '../libs/axios'
 
 import { useAuth } from '../contexts/auth-context'
 
-import { showNotification } from '@mantine/notifications'
 import { SignaturePad } from './signature-pad'
+import { SignaturePositionSelector } from './signature-position-selector'
+import { SignatureType } from './signature-type'
 import { ThemeSwitch } from './theme-switch'
 
 interface DocumentItem {
@@ -18,6 +33,22 @@ interface DocumentItem {
   file_path: string
   signed: boolean
   created_at: string
+}
+
+const fileName = (path: string) => {
+  const parts = path.split('/')
+  return parts[parts.length - 1]
+}
+
+const formatDate = (date: string) => {
+  const d = new Date(date)
+  return d.toLocaleString('en', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 export const UploadForm = () => {
@@ -35,8 +66,16 @@ export const UploadForm = () => {
   // States
   //
   const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null)
+  const [signatureType, setSignatureType] = useState('draw')
+
+  const [signatureCoords, setSignatureCoords] = useState({ x: 50, y: 750 })
+
   const [uploading, setUploading] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
   const [documents, setDocuments] = useState<DocumentItem[]>([])
 
   //
@@ -49,10 +88,28 @@ export const UploadForm = () => {
   }
 
   const handleUpload = async () => {
-    if (!pdfFile || !signatureDataUrl) {
+    if (!pdfFile) {
       showNotification({
         title: 'Attention',
-        message: 'Please select the PDF and draw the signature!',
+        message: 'Please select a PDF or DOCX file!',
+        color: 'red'
+      })
+      return
+    }
+
+    if (signatureType === 'draw' && !signatureDataUrl) {
+      showNotification({
+        title: 'Attention',
+        message: 'Please draw your signature first!',
+        color: 'red'
+      })
+      return
+    }
+
+    if (signatureType === 'upload' && !uploadedFile) {
+      showNotification({
+        title: 'Attention',
+        message: 'Please upload your signature first!',
         color: 'red'
       })
       return
@@ -60,13 +117,16 @@ export const UploadForm = () => {
 
     setUploading(true)
 
-    const signatureBlob = await (await fetch(signatureDataUrl)).blob()
+    const signatureBlob =
+      signatureType === 'draw'
+        ? await (await fetch(signatureDataUrl!)).blob()
+        : new Blob([uploadedFile as File], { type: uploadedFile?.type })
 
     const formData = new FormData()
     formData.append('file', pdfFile)
     formData.append('signature', signatureBlob, 'my-signature.png')
-    formData.append('signature_x', '100')
-    formData.append('signature_y', '100')
+    formData.append('signature_x', signatureCoords.x.toString())
+    formData.append('signature_y', signatureCoords.y.toString())
 
     try {
       await api.post('documents', formData, {
@@ -100,6 +160,8 @@ export const UploadForm = () => {
       return
     }
 
+    setDeletingId(id)
+
     const response = await api.delete(`/documents/${id}`)
 
     if (response.status === 200) {
@@ -117,6 +179,8 @@ export const UploadForm = () => {
         color: 'red'
       })
     }
+
+    setDeletingId(null)
   }
 
   const handleSignout = async () => {
@@ -139,6 +203,12 @@ export const UploadForm = () => {
     link.setAttribute('download', `document-${id}.pdf`)
     document.body.appendChild(link)
     link.click()
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event?.target?.files?.[0]) {
+      setUploadedFile(event.target.files[0])
+    }
   }
 
   //
@@ -165,19 +235,45 @@ export const UploadForm = () => {
           </Button>
         </Group>
 
-        <Text>Upload your document (.PDF or .DOCX) and sign it below.</Text>
-        <input
-          type="file"
-          accept="application/pdf,application/msword,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-          className="block w-full p-2 border rounded"
-        />
+        <Divider />
 
-        <Fieldset legend="Sign">
-          <SignaturePad onSave={setSignatureDataUrl} />
+        <Fieldset legend="Upload your document (.PDF or .DOCX) and sign it below">
+          <input
+            type="file"
+            accept="application/pdf,application/msword,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+            className="block w-full p-2 border rounded"
+          />
         </Fieldset>
 
-        <Button onClick={handleUpload} disabled={uploading} leftSection={<IconSend />}>
+        <SignatureType onSelectType={(value) => setSignatureType(value)} />
+
+        {signatureType === 'draw' && (
+          <Fieldset legend="Draw your signature">
+            <SignaturePad onSave={setSignatureDataUrl} />
+          </Fieldset>
+        )}
+
+        {signatureType === 'upload' && (
+          <Fieldset legend="Upload your signature (PNG)">
+            <Stack>
+              <input type="file" accept="image/png" onChange={handleFileChange} />
+              {uploadedFile && <Text c="dimmed">{uploadedFile.name}</Text>}
+            </Stack>
+          </Fieldset>
+        )}
+
+        <Text c="dimmed" size="sm">
+          Select the position of your signature on the document
+        </Text>
+        <SignaturePositionSelector onSelectPosition={(coords) => setSignatureCoords(coords)} />
+
+        {signatureDataUrl && <Alert color="green">Signature saved! You can now upload the document.</Alert>}
+        {!signatureDataUrl && (
+          <Alert color="orange">Draw or choose your signature above and click "Save" to upload the document.</Alert>
+        )}
+
+        <Button variant="gradient" onClick={handleUpload} loading={uploading} leftSection={<IconSend />}>
           {uploading ? 'Sending...' : 'Send Document'}
         </Button>
 
@@ -189,38 +285,54 @@ export const UploadForm = () => {
           </Text>
         )}
 
-        {documents.map((doc) => (
-          <Group key={doc.id} justify="space-between">
-            <Group>
-              <Text c="dimmed" size="xs">
-                {new Date(doc.created_at).toLocaleString('en', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </Text>
-              <Text>Document #{doc.id}</Text>
-              <Badge color={doc.signed ? 'green' : 'gray'}>{doc.signed ? 'Signed' : 'Pending'}</Badge>
-            </Group>
-
-            <Group>
-              <Button variant="outline" onClick={() => handleDownload(doc.id)} leftSection={<IconPdf />}>
-                Download
-              </Button>
-              <ActionIcon
-                variant="outline"
-                color="red"
-                onClick={() => handleDelete(doc.id)}
-                title="Delete document"
-                size="lg"
-              >
-                <IconTrash size={16} />
-              </ActionIcon>
-            </Group>
-          </Group>
-        ))}
+        <Table.ScrollContainer minWidth={650}>
+          <Table highlightOnHover striped withTableBorder>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th w={110}>Date</Table.Th>
+                <Table.Th w={160}>Filename</Table.Th>
+                <Table.Th w={80}>Signed</Table.Th>
+                <Table.Th ta="center" w={130}>
+                  Actions
+                </Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {documents.map((doc) => (
+                <Table.Tr key={doc.id}>
+                  <Table.Td c="dimmed" fz="xs">
+                    {formatDate(doc.created_at)}
+                  </Table.Td>
+                  <Table.Td>
+                    <Text w={160} truncate inherit>
+                      {fileName(doc.file_path)}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Badge color={doc.signed ? 'green' : 'gray'}>{doc.signed ? 'Signed' : 'Pending'}</Badge>
+                  </Table.Td>
+                  <Table.Td ta="center">
+                    <Group gap={5}>
+                      <Button variant="outline" onClick={() => handleDownload(doc.id)}>
+                        Download
+                      </Button>
+                      <ActionIcon
+                        variant="outline"
+                        color="red"
+                        onClick={() => handleDelete(doc.id)}
+                        title="Delete document"
+                        size="lg"
+                        loading={deletingId === doc.id}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       </Stack>
     </Container>
   )
