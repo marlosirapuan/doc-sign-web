@@ -1,17 +1,14 @@
-import { type ReactNode, Suspense } from 'react'
+import type { ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 
 import { QueryClientProvider } from '@tanstack/react-query'
-
-import { LoadingOverlay } from '@mantine/core'
 
 import { queryClient } from './libs/query-client'
 
 import { useAuth } from './contexts/auth-context'
 
-import { UploadForm } from './components/upload-form'
-
 import { LoginPage } from './pages/login-page'
+import { MainPage } from './pages/main-page'
 
 const AuthenticatedRoute = ({ children }: { children: ReactNode }) => {
   const auth = useAuth()
@@ -33,14 +30,12 @@ const renderRoute = (path: string, element: ReactNode, isPublic: boolean) => {
 export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<LoadingOverlay visible />}>
-        <BrowserRouter>
-          <Routes>
-            {renderRoute('/login', <LoginPage />, true)}
-            {renderRoute('/', <UploadForm />, false)}
-          </Routes>
-        </BrowserRouter>
-      </Suspense>
+      <BrowserRouter>
+        <Routes>
+          {renderRoute('/login', <LoginPage />, true)}
+          {renderRoute('/', <MainPage />, false)}
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   )
 }
