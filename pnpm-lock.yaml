@@ -23,6 +23,9 @@ importers:
       '@tabler/icons-react':
         specifier: 3.31.0
         version: 3.31.0(react@19.0.0)
+      '@tanstack/react-query':
+        specifier: 5.74.7
+        version: 5.74.7(react@19.0.0)
       axios:
         specifier: 1.9.0
         version: 1.9.0
@@ -636,6 +639,14 @@ packages:
 
   '@tabler/icons@3.31.0':
     resolution: {integrity: sha512-dblAdeKY3+GA1U+Q9eziZ0ooVlZMHsE8dqP0RkwvRtEsAULoKOYaCUOcJ4oW1DjWegdxk++UAt2SlQVnmeHv+g==}
+
+  '@tanstack/query-core@5.74.7':
+    resolution: {integrity: sha512-X3StkN/Y6KGHndTjJf8H8th7AX4bKfbRpiVhVqevf0QWlxl6DhyJ0TYG3R0LARa/+xqDwzU9mA4pbJxzPCI29A==}
+
+  '@tanstack/react-query@5.74.7':
+    resolution: {integrity: sha512-u4o/RIWnnrq26orGZu2NDPwmVof1vtAiiV6KYUXd49GuK+8HX+gyxoAYqIaZogvCE1cqOuZAhQKcrKGYGkrLxg==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -2187,6 +2198,13 @@ snapshots:
       react: 19.0.0
 
   '@tabler/icons@3.31.0': {}
+
+  '@tanstack/query-core@5.74.7': {}
+
+  '@tanstack/react-query@5.74.7(react@19.0.0)':
+    dependencies:
+      '@tanstack/query-core': 5.74.7
+      react: 19.0.0
 
   '@types/babel__core@7.20.5':
     dependencies:

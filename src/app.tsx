@@ -1,7 +1,11 @@
 import { type ReactNode, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 
-import { Center, Loader } from '@mantine/core'
+import { QueryClientProvider } from '@tanstack/react-query'
+
+import { LoadingOverlay } from '@mantine/core'
+
+import { queryClient } from './libs/query-client'
 
 import { useAuth } from './contexts/auth-context'
 
@@ -21,26 +25,22 @@ const PublicRoute = ({ children }: { children: ReactNode }) => {
   return auth?.token ? <Navigate to="/" replace /> : <>{children}</>
 }
 
-export const App = () => {
-  const renderRoute = (path: string, element: ReactNode, isPublic: boolean) => {
-    const Wrapper = isPublic ? PublicRoute : AuthenticatedRoute
-    return <Route path={path} element={<Wrapper>{element}</Wrapper>} />
-  }
+const renderRoute = (path: string, element: ReactNode, isPublic: boolean) => {
+  const Wrapper = isPublic ? PublicRoute : AuthenticatedRoute
+  return <Route path={path} element={<Wrapper>{element}</Wrapper>} />
+}
 
+export const App = () => {
   return (
-    <Suspense
-      fallback={
-        <Center>
-          <Loader size={150} />
-        </Center>
-      }
-    >
-      <BrowserRouter>
-        <Routes>
-          {renderRoute('/login', <LoginPage />, true)}
-          {renderRoute('/', <UploadForm />, false)}
-        </Routes>
-      </BrowserRouter>
-    </Suspense>
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={<LoadingOverlay visible />}>
+        <BrowserRouter>
+          <Routes>
+            {renderRoute('/login', <LoginPage />, true)}
+            {renderRoute('/', <UploadForm />, false)}
+          </Routes>
+        </BrowserRouter>
+      </Suspense>
+    </QueryClientProvider>
   )
 }

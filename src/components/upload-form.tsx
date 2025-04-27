@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { Alert, Button, Container, Divider, Fieldset, Group, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Center, Container, Divider, Fieldset, Group, Loader, Stack, Text, Title } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
 
 import { IconLogout, IconSend } from '@tabler/icons-react'
@@ -10,14 +10,13 @@ import { api } from '../libs/axios'
 
 import { useAuth } from '../contexts/auth-context'
 
-import type { DocumentItem } from './signature-upload.types'
-
 import { SignaturePad } from './signature-pad'
 import { SignaturePositionSelector } from './signature-position-selector'
 import { SignatureType } from './signature-type'
 import { SignatureUploadItems } from './signature-upload-items'
 import { getIPAndLocation } from './signature-upload.helpers'
 
+import { useDocuments } from '../hooks/use-documents'
 import { ThemeSwitch } from './theme-switch'
 
 export const UploadForm = () => {
@@ -30,6 +29,10 @@ export const UploadForm = () => {
   // Hooks
   //
   const navigate = useNavigate()
+
+  const { query, mutation } = useDocuments({
+    enabled: true
+  })
 
   //
   // States
@@ -45,8 +48,6 @@ export const UploadForm = () => {
   const [uploading, setUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
-  const [documents, setDocuments] = useState<DocumentItem[]>([])
-
   const [currentIPGeolocation, setCurrentIPGeolocation] = useState<{
     ip: null
     geolocation: {
@@ -61,12 +62,6 @@ export const UploadForm = () => {
   //
   // Functions
   //
-  const fetchDocuments = async () => {
-    const response = await api.get<DocumentItem[]>('/documents')
-
-    setDocuments(response.data)
-  }
-
   const handleUpload = async () => {
     if (!pdfFile) {
       return showNotification({
@@ -79,7 +74,7 @@ export const UploadForm = () => {
     if ((signatureType === 'draw' && !signatureDataUrl) || (signatureType === 'upload' && !uploadedFile)) {
       return showNotification({
         title: 'Attention',
-        message: `Please ${signatureType === 'draw' ? 'draw your signature' : 'upload your signature'} first!`,
+        message: `Please ${signatureType === 'draw' ? 'draw your signature and SAVE SIGNATURE' : 'upload your signature'} first!`,
         color: 'red'
       })
     }
@@ -106,11 +101,7 @@ export const UploadForm = () => {
         )
       }
 
-      await api.post('documents', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      await mutation.createDocument.mutateAsync(formData)
 
       showNotification({
         title: 'Success',
@@ -118,7 +109,7 @@ export const UploadForm = () => {
         color: 'green'
       })
 
-      fetchDocuments()
+      await query.refetch()
     } catch (error) {
       console.error(error)
 
@@ -139,7 +130,7 @@ export const UploadForm = () => {
 
     setDeletingId(id)
 
-    const response = await api.delete(`/documents/${id}`)
+    const response = await mutation.deleteDocument.mutateAsync(id)
 
     if (response.status === 200) {
       showNotification({
@@ -148,7 +139,7 @@ export const UploadForm = () => {
         color: 'green'
       })
 
-      fetchDocuments()
+      await query.refetch()
     } else {
       showNotification({
         title: 'Error',
@@ -191,11 +182,6 @@ export const UploadForm = () => {
   //
   // Effects
   //
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    fetchDocuments()
-  }, [])
-
   useEffect(() => {
     const fetchIPGeolocation = async () => {
       const response = await getIPAndLocation()
@@ -205,6 +191,8 @@ export const UploadForm = () => {
 
     fetchIPGeolocation()
   }, [])
+
+  const documents = query.data?.data || []
 
   return (
     <Container size={700} py="xl">
@@ -249,25 +237,33 @@ export const UploadForm = () => {
           </Fieldset>
         )}
 
-        <Fieldset legend="4) Select signature position">
-          <SignaturePositionSelector onSelectPosition={(coords) => setSignatureCoords(coords)} />
-        </Fieldset>
-
         {signatureDataUrl && <Alert color="green">Signature saved! You can now upload the document.</Alert>}
         {!signatureDataUrl && (
           <Alert color="orange">Draw or choose your signature above and click "Save" to upload the document.</Alert>
         )}
 
+        <Fieldset legend="4) Select signature position">
+          <SignaturePositionSelector onSelectPosition={(coords) => setSignatureCoords(coords)} />
+        </Fieldset>
+
         <Button variant="gradient" onClick={handleUpload} loading={uploading} leftSection={<IconSend />}>
           {uploading ? 'Sending...' : 'Send Document'}
         </Button>
 
-        <SignatureUploadItems
-          documents={documents}
-          deletingId={deletingId}
-          onDownload={handleDownload}
-          onDelete={handleDelete}
-        />
+        {query.isLoading && (
+          <Center>
+            <Loader size="lg" />
+          </Center>
+        )}
+
+        {!query.isLoading && (
+          <SignatureUploadItems
+            documents={documents}
+            deletingId={deletingId}
+            onDownload={handleDownload}
+            onDelete={handleDelete}
+          />
+        )}
       </Stack>
     </Container>
   )
