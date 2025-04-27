@@ -13,3 +13,42 @@ export const formatDate = (date: string) => {
     minute: '2-digit'
   })
 }
+
+const getIp = async () => {
+  const res = await fetch('https://api.ipify.org?format=json')
+  const data = await res.json()
+  return data.ip // Ex: '192.168.1.1'
+}
+const getGeolocation = (): Promise<{ latitude: number; longitude: number }> => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'))
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      },
+      (error) => {
+        reject(error)
+      }
+    )
+  })
+}
+
+export const getIPAndLocation = async () => {
+  try {
+    const [ip, geolocation] = await Promise.all([getIp(), getGeolocation()])
+    return {
+      ip,
+      geolocation
+    }
+  } catch {
+    return {
+      ip: null,
+      geolocation: null
+    }
+  }
+}

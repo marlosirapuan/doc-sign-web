@@ -13,15 +13,10 @@ import { useAuth } from '../contexts/auth-context'
 import { SignaturePad } from './signature-pad'
 import { SignaturePositionSelector } from './signature-position-selector'
 import { SignatureType } from './signature-type'
-import { SignatureUploadItems } from './signature-upload-items'
-import { ThemeSwitch } from './theme-switch'
+import { type DocumentItem, SignatureUploadItems } from './signature-upload-items'
+import { getIPAndLocation } from './signature-upload.helpers'
 
-interface DocumentItem {
-  id: number
-  file_path: string
-  signed: boolean
-  created_at: string
-}
+import { ThemeSwitch } from './theme-switch'
 
 export const UploadForm = () => {
   //
@@ -49,6 +44,17 @@ export const UploadForm = () => {
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const [documents, setDocuments] = useState<DocumentItem[]>([])
+
+  const [currentIPGeolocation, setCurrentIPGeolocation] = useState<{
+    ip: null
+    geolocation: {
+      latitude: number
+      longitude: number
+    } | null
+  }>({
+    ip: null,
+    geolocation: null
+  })
 
   //
   // Functions
@@ -89,6 +95,14 @@ export const UploadForm = () => {
       formData.append('signature', signatureBlob, 'my-signature.png')
       formData.append('signature_x', signatureCoords.x.toString())
       formData.append('signature_y', signatureCoords.y.toString())
+
+      if (currentIPGeolocation.ip && currentIPGeolocation.geolocation) {
+        formData.append('ip', currentIPGeolocation.ip || '')
+        formData.append(
+          'geolocation',
+          `${String(currentIPGeolocation.geolocation?.latitude || '')},${String(currentIPGeolocation.geolocation?.longitude || '')}`
+        )
+      }
 
       await api.post('documents', formData, {
         headers: {
@@ -178,6 +192,16 @@ export const UploadForm = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     fetchDocuments()
+  }, [])
+
+  useEffect(() => {
+    const fetchIPGeolocation = async () => {
+      const response = await getIPAndLocation()
+      const { ip, geolocation } = response
+      setCurrentIPGeolocation({ ip, geolocation })
+    }
+
+    fetchIPGeolocation()
   }, [])
 
   return (
