@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
 
-import { Alert, Button, Center, Container, Divider, Fieldset, Group, Loader, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Center, Fieldset, Loader } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
 
-import { IconLogout, IconSend } from '@tabler/icons-react'
+import { IconCloudUpload } from '@tabler/icons-react'
 
 import { api } from '../libs/axios'
-
-import { useAuth } from '../contexts/auth-context'
 
 import { SignaturePad } from './signature-pad'
 import { SignaturePositionSelector } from './signature-position-selector'
@@ -17,19 +14,11 @@ import { SignatureUploadItems } from './signature-upload-items'
 import { getIPAndLocation } from './signature-upload.helpers'
 
 import { useDocuments } from '../hooks/use-documents'
-import { ThemeSwitch } from './theme-switch'
 
 export const UploadForm = () => {
   //
-  // Context
-  //
-  const auth = useAuth()
-
-  //
   // Hooks
   //
-  const navigate = useNavigate()
-
   const { query, mutation } = useDocuments({
     enabled: true
   })
@@ -147,12 +136,6 @@ export const UploadForm = () => {
     setDeletingId(null)
   }
 
-  const handleSignout = async () => {
-    auth?.logout()
-
-    navigate('/login', { replace: true })
-  }
-
   const handleDownload = async (id: number) => {
     const token = localStorage.getItem('token')
 
@@ -191,76 +174,59 @@ export const UploadForm = () => {
   const documents = query.data?.data || []
 
   return (
-    <Container size={700} py="xl">
-      <Stack>
-        <Title>Document Upload and Signature</Title>
+    <>
+      <Fieldset legend="1) Upload your document (.PDF or .DOCX) and sign it below">
+        <input
+          type="file"
+          accept="application/pdf,application/msword,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+          className="block w-full p-2 border rounded"
+        />
+      </Fieldset>
 
-        <Divider />
+      <Fieldset legend="2) Select your signature type">
+        <SignatureType onSelectType={(value) => setSignatureType(value)} />
+      </Fieldset>
 
-        <Group justify="flex-end">
-          <ThemeSwitch />
-          <Divider orientation="vertical" />
-          <Text>Logged</Text>
-          <Button variant="default" leftSection={<IconLogout />} onClick={handleSignout}>
-            Sign Out
-          </Button>
-        </Group>
-
-        <Divider />
-
-        <Fieldset legend="1) Upload your document (.PDF or .DOCX) and sign it below">
-          <input
-            type="file"
-            accept="application/pdf,application/msword,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-            className="block w-full p-2 border rounded"
-          />
+      {signatureType === 'draw' && (
+        <Fieldset legend="3) Draw your signature">
+          <SignaturePad onSave={setSignatureDataUrl} />
         </Fieldset>
+      )}
 
-        <Fieldset legend="2) Select your signature type">
-          <SignatureType onSelectType={(value) => setSignatureType(value)} />
+      {signatureType === 'upload' && (
+        <Fieldset legend="3) Upload your signature (PNG)">
+          <input type="file" accept="image/png" onChange={handleFileChange} />
         </Fieldset>
+      )}
 
-        {signatureType === 'draw' && (
-          <Fieldset legend="3) Draw your signature">
-            <SignaturePad onSave={setSignatureDataUrl} />
-          </Fieldset>
-        )}
+      {signatureDataUrl && <Alert color="green">Signature saved! You can now upload the document.</Alert>}
+      {!signatureDataUrl && (
+        <Alert color="orange">Draw or choose your signature above and click "Save" to upload the document.</Alert>
+      )}
 
-        {signatureType === 'upload' && (
-          <Fieldset legend="3) Upload your signature (PNG)">
-            <input type="file" accept="image/png" onChange={handleFileChange} />
-          </Fieldset>
-        )}
+      <Fieldset legend="4) Select signature position">
+        <SignaturePositionSelector onSelectPosition={(coords) => setSignatureCoords(coords)} />
+      </Fieldset>
 
-        {signatureDataUrl && <Alert color="green">Signature saved! You can now upload the document.</Alert>}
-        {!signatureDataUrl && (
-          <Alert color="orange">Draw or choose your signature above and click "Save" to upload the document.</Alert>
-        )}
+      <Button variant="gradient" onClick={handleUpload} loading={uploading} leftSection={<IconCloudUpload />}>
+        {uploading ? 'Sending...' : 'Send Document'}
+      </Button>
 
-        <Fieldset legend="4) Select signature position">
-          <SignaturePositionSelector onSelectPosition={(coords) => setSignatureCoords(coords)} />
-        </Fieldset>
+      {query.isLoading && (
+        <Center>
+          <Loader size="lg" />
+        </Center>
+      )}
 
-        <Button variant="gradient" onClick={handleUpload} loading={uploading} leftSection={<IconSend />}>
-          {uploading ? 'Sending...' : 'Send Document'}
-        </Button>
-
-        {query.isLoading && (
-          <Center>
-            <Loader size="lg" />
-          </Center>
-        )}
-
-        {!query.isLoading && (
-          <SignatureUploadItems
-            documents={documents}
-            deletingId={deletingId}
-            onDownload={handleDownload}
-            onDelete={handleDelete}
-          />
-        )}
-      </Stack>
-    </Container>
+      {!query.isLoading && (
+        <SignatureUploadItems
+          documents={documents}
+          deletingId={deletingId}
+          onDownload={handleDownload}
+          onDelete={handleDelete}
+        />
+      )}
+    </>
   )
 }
