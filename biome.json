@@ -5,13 +5,7 @@
   },
   "linter": {
     "enabled": true,
-    "ignore": [
-      "node_modules",
-      "docs",
-      "dist",
-      "public",
-      "bin"
-    ],
+    "ignore": ["node_modules", "docs", "dist", "public", "bin"],
     "rules": {
       "recommended": true,
       "correctness": {
@@ -38,14 +32,7 @@
     "indentWidth": 2,
     "lineWidth": 120,
     "lineEnding": "lf",
-    "ignore": [
-      "node_modules",
-      "docs",
-      "dist",
-      "public",
-      "**/node_modules/**",
-      "bin"
-    ]
+    "ignore": ["node_modules", "docs", "dist", "public", "**/node_modules/**", "bin"]
   },
   "javascript": {
     "formatter": {
@@ -66,11 +53,7 @@
       "./tsconfig.json",
       "./vite.config.ts"
     ],
-    "ignore": [
-      "node_modules",
-      "dist",
-      "bin"
-    ],
+    "ignore": ["node_modules", "dist", "bin"],
     "ignoreUnknown": true
   }
 }
