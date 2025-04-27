@@ -1,23 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
-  ActionIcon,
-  Alert,
-  Badge,
-  Button,
-  Container,
-  Divider,
-  Fieldset,
-  Group,
-  Stack,
-  Table,
-  Text,
-  Title
-} from '@mantine/core'
+import { Alert, Button, Container, Divider, Fieldset, Group, Stack, Text, Title } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
 
-import { IconLogout, IconSend, IconTrash } from '@tabler/icons-react'
+import { IconLogout, IconSend } from '@tabler/icons-react'
 
 import { api } from '../libs/axios'
 
@@ -26,6 +13,7 @@ import { useAuth } from '../contexts/auth-context'
 import { SignaturePad } from './signature-pad'
 import { SignaturePositionSelector } from './signature-position-selector'
 import { SignatureType } from './signature-type'
+import { SignatureUploadItems } from './signature-upload-items'
 import { ThemeSwitch } from './theme-switch'
 
 interface DocumentItem {
@@ -33,22 +21,6 @@ interface DocumentItem {
   file_path: string
   signed: boolean
   created_at: string
-}
-
-const fileName = (path: string) => {
-  const parts = path.split('/')
-  return parts[parts.length - 1]
-}
-
-const formatDate = (date: string) => {
-  const d = new Date(date)
-  return d.toLocaleString('en', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 
 export const UploadForm = () => {
@@ -264,62 +236,12 @@ export const UploadForm = () => {
           {uploading ? 'Sending...' : 'Send Document'}
         </Button>
 
-        <Title order={3}>Your Documents</Title>
-
-        {documents.length === 0 && (
-          <Text c="dimmed" size="sm">
-            No documents uploaded yet.
-          </Text>
-        )}
-
-        <Table.ScrollContainer minWidth={650}>
-          <Table highlightOnHover striped withTableBorder>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th w={110}>Date</Table.Th>
-                <Table.Th w={160}>Filename</Table.Th>
-                <Table.Th w={80}>Signed</Table.Th>
-                <Table.Th ta="center" w={130}>
-                  Actions
-                </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {documents.map((doc) => (
-                <Table.Tr key={doc.id}>
-                  <Table.Td c="dimmed" fz="xs">
-                    {formatDate(doc.created_at)}
-                  </Table.Td>
-                  <Table.Td>
-                    <Text w={160} truncate inherit>
-                      {fileName(doc.file_path)}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge color={doc.signed ? 'green' : 'gray'}>{doc.signed ? 'Signed' : 'Pending'}</Badge>
-                  </Table.Td>
-                  <Table.Td ta="center">
-                    <Group gap={5}>
-                      <Button variant="outline" onClick={() => handleDownload(doc.id)}>
-                        Download
-                      </Button>
-                      <ActionIcon
-                        variant="outline"
-                        color="red"
-                        onClick={() => handleDelete(doc.id)}
-                        title="Delete document"
-                        size="lg"
-                        loading={deletingId === doc.id}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </Table.ScrollContainer>
+        <SignatureUploadItems
+          documents={documents}
+          deletingId={deletingId}
+          onDownload={handleDownload}
+          onDelete={handleDelete}
+        />
       </Stack>
     </Container>
   )
