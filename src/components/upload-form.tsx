@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { Badge, Button, Container, Divider, Fieldset, Group, Stack, Text, Title } from '@mantine/core'
+import { ActionIcon, Badge, Button, Container, Divider, Fieldset, Group, Stack, Text, Title } from '@mantine/core'
 
-import { IconLogout, IconPdf, IconSend } from '@tabler/icons-react'
+import { IconLogout, IconPdf, IconSend, IconTrash } from '@tabler/icons-react'
 
 import { api } from '../libs/axios'
 
@@ -95,6 +95,30 @@ export const UploadForm = () => {
     }
   }
 
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) {
+      return
+    }
+
+    const response = await api.delete(`/documents/${id}`)
+
+    if (response.status === 200) {
+      showNotification({
+        title: 'Success',
+        message: 'Document deleted successfully!',
+        color: 'green'
+      })
+
+      fetchDocuments()
+    } else {
+      showNotification({
+        title: 'Error',
+        message: 'Error deleting document!',
+        color: 'red'
+      })
+    }
+  }
+
   const handleSignout = async () => {
     auth?.logout()
 
@@ -180,9 +204,21 @@ export const UploadForm = () => {
               <Text>Document #{doc.id}</Text>
               <Badge color={doc.signed ? 'green' : 'gray'}>{doc.signed ? 'Signed' : 'Pending'}</Badge>
             </Group>
-            <Button variant="outline" onClick={() => handleDownload(doc.id)} leftSection={<IconPdf />}>
-              Download
-            </Button>
+
+            <Group>
+              <Button variant="outline" onClick={() => handleDownload(doc.id)} leftSection={<IconPdf />}>
+                Download
+              </Button>
+              <ActionIcon
+                variant="outline"
+                color="red"
+                onClick={() => handleDelete(doc.id)}
+                title="Delete document"
+                size="lg"
+              >
+                <IconTrash size={16} />
+              </ActionIcon>
+            </Group>
           </Group>
         ))}
       </Stack>
