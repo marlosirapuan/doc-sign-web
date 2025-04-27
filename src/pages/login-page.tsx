@@ -48,7 +48,7 @@ export const LoginPage = () => {
     setIsProcessing(true)
 
     try {
-      const res = await api.post('http://localhost:3000/login', {
+      const res = await api.post('/login', {
         email: values.email,
         password: values.password
       })
