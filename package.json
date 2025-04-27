@@ -15,7 +15,8 @@
     "@mantine/hooks": "^7.17.5",
     "@mantine/notifications": "^7.17.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router": "^7.5.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
