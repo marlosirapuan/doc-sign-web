@@ -8,6 +8,7 @@ Small web project to sign document with attachment
 
 - React 19 (with React Compiler)
 - React Router
+- React Query
 - Context API
 - MantineUI
 - Vite & Vitest
