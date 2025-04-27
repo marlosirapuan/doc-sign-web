@@ -10,10 +10,12 @@ import { api } from '../libs/axios'
 
 import { useAuth } from '../contexts/auth-context'
 
+import type { DocumentItem } from './signature-upload.types'
+
 import { SignaturePad } from './signature-pad'
 import { SignaturePositionSelector } from './signature-position-selector'
 import { SignatureType } from './signature-type'
-import { type DocumentItem, SignatureUploadItems } from './signature-upload-items'
+import { SignatureUploadItems } from './signature-upload-items'
 import { getIPAndLocation } from './signature-upload.helpers'
 
 import { ThemeSwitch } from './theme-switch'
