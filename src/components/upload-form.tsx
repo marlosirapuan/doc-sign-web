@@ -108,8 +108,6 @@ export const UploadForm = () => {
         message: 'Document uploaded successfully!',
         color: 'green'
       })
-
-      await query.refetch()
     } catch (error) {
       console.error(error)
 
@@ -138,8 +136,6 @@ export const UploadForm = () => {
         message: 'Document deleted successfully!',
         color: 'green'
       })
-
-      await query.refetch()
     } else {
       showNotification({
         title: 'Error',
