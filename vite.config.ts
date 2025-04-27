@@ -15,5 +15,9 @@ export default defineConfig({
       }
     }),
     tsConfigPaths()
-  ]
+  ],
+  server: {
+    port: 5176,
+    host: true
+  }
 })

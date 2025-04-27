@@ -1,54 +1,72 @@
-# React + TypeScript + Vite
+# doc-sign-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Small web project to sign document with attachment
 
-Currently, two official plugins are available:
+### Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 (with React Compiler)
+- React Router
+- Context API
+- MantineUI
+- Vite & Vitest
 
-## Expanding the ESLint configuration
+### Getting started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Install PNPM (better than npm, yarn etc):
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+[https://pnpm.io/installation](https://pnpm.io/installation)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+or use Docker (orientations below)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### How to run the application
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+1) Install libs
+
+  ```bash
+  pnpm install
+  ```
+
+2) Start application
+
+  ```bash
+  pnpm dev
+  ```
+
+  Access url: https://localhost:5176
+
+3) User test:
+
+  ```
+  user1@example.com
+  password123
+  ```
+
+### How to run tests
+
+Run tests:
+
+  ```bash
+  pnpm test
+  ```
+
+### Using Docker
+
+Run the app with:
+
+  ```bash
+  docker compose up web
+  ```
+
+And access the URL:
+
+  ```
+  https://localhost:5176
+  ```
+
+  Access url: https://localhost:5176
+
+---
+
+Backend for this application:
+
+[https://github.com/marlosirapuan/doc-sign-api](https://github.com/marlosirapuan/doc-sign-api)
