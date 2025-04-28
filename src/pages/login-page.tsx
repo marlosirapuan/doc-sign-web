@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router'
 import { useForm } from '@mantine/form'
 import { showNotification } from '@mantine/notifications'
 
-import { api } from '../libs/axios'
+import api from '../libs/axios'
 
 import { ThemeSwitch } from '../components/theme-switch'
 

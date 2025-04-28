@@ -5,8 +5,6 @@ import { showNotification } from '@mantine/notifications'
 
 import { IconCloudUpload } from '@tabler/icons-react'
 
-import { api } from '../libs/axios'
-
 import { SignaturePad } from './signature-pad'
 import { SignaturePositionSelector } from './signature-position-selector'
 import { SignatureType } from './signature-type'
@@ -137,14 +135,9 @@ export const UploadForm = () => {
   }
 
   const handleDownload = async (id: number) => {
-    const token = localStorage.getItem('token')
+    const response = await mutation.downloadDocument.mutateAsync(id)
 
-    const res = await api.get(`/documents/${id}/download`, {
-      headers: { Authorization: `Bearer ${token}` },
-      responseType: 'blob'
-    })
-
-    const url = window.URL.createObjectURL(new Blob([res.data]))
+    const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
     link.setAttribute('download', `document-${id}.pdf`)
