@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 
-import { api } from '../libs/axios'
+import api from '../libs/axios'
 
 import type { DocumentItem } from '../components/signature-upload.types'
 import { queryClient } from '../libs/query-client'
@@ -33,6 +33,16 @@ export const useDocuments = ({ enabled = true }: UseDocumentsOptions) => {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['documents'] })
+      }
+    }),
+    downloadDocument: useMutation({
+      mutationFn: async (id: number) => {
+        const endpoint = `/documents/${id}/download`
+        const response = await api.get(endpoint, {
+          timeout: 5000,
+          responseType: 'blob'
+        })
+        return response
       }
     })
   }
